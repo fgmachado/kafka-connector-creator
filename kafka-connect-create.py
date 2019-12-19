@@ -17,12 +17,13 @@ def connectors_create(params):
     conn_user = get_item(params, 5)
     conn_pwd = get_item(params, 6)
 
-    for file_name in read_dir(path):
-        print(connector_create(read_file(path, file_name), kafka_api, kafka_host, conn_url, conn_user, conn_pwd))
+    if path is not None:
+        for file_name in read_dir(path):
+            print(connector_create(read_file(path, file_name), kafka_api, kafka_host, conn_url, conn_user, conn_pwd))
 
 
 def get_item(array=[], index=0):
-    if array.__sizeof__() > 0:
+    if index < len(array):
         return array.__getitem__(index)
     return
 
@@ -32,19 +33,32 @@ def read_dir(path):
 
 
 def read_file(path, file_name):
-    with open(path+'\\'+file_name) as reader:
+    with open(path + '\\' + file_name) as reader:
         return reader.read()
     return ''
 
 
 def prepare_file(content='', connection_url='', connection_user='', connection_password=''):
-    content = replace_value(content, CONNECTION_URL, connection_url)
-    content = replace_value(content, CONNECTION_USER, connection_user)
-    return replace_value(content, CONNECTION_PASSWORD, connection_password)
+    if content is '':
+        return content
+
+    replaces = {
+        CONNECTION_URL: connection_url,
+        CONNECTION_USER: connection_user,
+        CONNECTION_PASSWORD: connection_password
+    }
+
+    return replace_value(content, replaces)
 
 
-def replace_value(content='', find='', new_value=''):
-    return content.replace(find, new_value)
+def replace_value(content='', replaces={}):
+    if content is '':
+        return content
+
+    for replace in replaces:
+        content.replace(replace, replaces[replace])
+
+    return content
 
 
 def connector_create(file_content, kafka_api, kafka_host, connection_url, connection_user, connection_password):
